@@ -2,7 +2,7 @@ const
   express = require('express'),
   router = express.Router(),
   User = require('../models/user'),
-  bcrypt = require('bcrypt');
+  mid = require('../middleware');
 
 router.get('/', function(req, res) {
   return res.render('index', { title: 'Home' });
@@ -16,7 +16,7 @@ router.get('/contact', function(req, res) {
   return res.render('contact', { title: 'Contact' });
 });
 
-router.get('/register', function (req, res) {
+router.get('/register', mid.loggedOut, function (req, res) {
   return res.render('register', { title: 'Sign Up!' });
 });
 
@@ -49,7 +49,7 @@ router.post('/register', function ({ body, session }, res, next) {
     }
 });
 
-router.get('/login', function (req, res) {
+router.get('/login', mid.loggedOut, function (req, res) {
   return res.render('login', { title: 'Log In' });
 });
 
@@ -71,12 +71,7 @@ router.post('/login', function ( { body: { email, password }, session }, res, ne
   }
 });
 
-router.get('/profile', function({ session },res,next) {
-  if (!session.userId) {
-    const err = new Error('You are not authorized to see this page');
-    err.status = 401;
-    return next(err);
-  }
+router.get('/profile', mid.loggedIn, function({ session },res,next) {
   User.findById(session.userId)
     .exec((err, { name, favoriteBook}) => {
       if(err) return next(err);
