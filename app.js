@@ -2,7 +2,20 @@ const
   express = require('express'),
   bodyParser = require('body-parser'),
   mongoose = require('mongoose'),
+  session = require('express-session'),
   app = express();
+
+
+app.use(session({
+  secret: 'treehouse loves you',
+  resave: true,
+  saveUninitialized: false
+}));
+
+app.use( ({ session }, { locals }, next) => {
+  locals.currentUser = session.userId;
+  next();
+});
 
 mongoose.connect('mongodb://localhost:27017/bookworm');
 const db = mongoose.connection;
@@ -42,6 +55,6 @@ app.use(function(err, req, res, next) {
 });
 
 // listen on port 3000
-app.listen(3000, function () {
+app.listen(1337, function () {
   console.log('Express app listening on port 3000');
 });
